@@ -1,0 +1,62 @@
+<form action="/data" method = "POST">
+    <p>Введите название растения(если имеется): <input type = "text" name = "plant_name"/></p>
+    <br>
+    <p>Выберите типы культур(чтобы выбрать несколько, зажимайте Ctrl, если тип не указан, поиск будет
+        осуществляться по всем):
+        <br>
+        <select name="plant_types" multiple>
+            <option value="Однолетние растения">Однолетние растения</option>
+            <option value="Декоративные деревья и кустарники">Декоративные деревья и кустарники</option>
+            <option value="Двулетние растения">Двулетние растения</option>
+            <option value="Хвойные растения">Хвойные растения</option>
+            <option value="Декоративные злаки и газонные травы">Декоративные злаки и газонные травы</option>
+            <option value="Папоротники">Папоротники</option>
+            <option value="Луковичные и клубневые растения">Луковичные и клубневые растения</option>
+            <option value="Растения для водоемов и прибрежных зон">Растения для водоемов и прибрежных зон</option>
+            <option value="Лианы">Лианы</option>
+            <option value="Растения для альпинария">Растения для альпинария</option>
+            <option value="Почвопокровные растения">Почвопокровные растения</option>
+            <option value="Растения для теневых зон">Растения для теневых зон</option>
+            <option value="Контейнерные растения">Контейнерные растения</option>
+            <option value="Многолетние травянистые растения">Многолетние травянистые растения</option>
+        </select>
+    </p>
+    <br>
+    <p>Выберите цвет, который вас интересует:
+        <br>
+        <select name="plant_colour">
+            <option value=""></option>
+            <option value="золотистый">золотистый</option>
+            <option value="желтый">желтый</option>
+            <option value="красный">красный</option>
+            <option value="пурпурный">пурпурный</option>
+            <option value="коричневый">коричневый</option>
+            <option value="сиреневый">сиреневый</option>
+            <option value="белый">белый</option>
+            <option value="оранжевый">оранжевый</option>
+            <option value="зеленый">зеленый</option>
+            <option value="синий">синий</option>
+            <option value="бежевый">бежевый</option>
+            <option value="сизый">сизый</option>
+            <option value="лимонный">лимонный</option>
+            <option value="серый">серый</option>
+            <option value="черный">черный</option>
+            <option value="розовый">розовый</option>
+            <option value="фиолетовый">фиолетовый</option>
+            <option value="серебристый">серебристый</option>
+            <option value="бурый">бурый</option>
+            <option value="коралловый">коралловый</option>
+            <option value="лиловый">лиловый</option>
+            <option value="болотный">болотный</option>
+            <option value="рыжий">рыжий</option>
+            <option value="белоснежный">белоснежный</option>
+            <option value="ванильный">ванильный</option>
+            <option value="малиновый">малиновый</option>
+            <option value="бронзовый">бронзовый</option>
+            <option value="розоватый">розоватый</option>
+            <option value="каштановый">каштановый</option>
+            <option value="кремовый">кремовый</option>
+        </select>
+    </p>
+    <p><input type="submit" value="Поиск" /></p>
+</form>
