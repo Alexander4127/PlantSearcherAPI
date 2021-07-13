@@ -1,0 +1,13 @@
+<title> {{form_data['res_plant_name']}} </title>
+<br>
+<img width="300" src={{form_data['photo_ref']}} alt="alternatetext">
+
+<br>
+<h2>Род растения:</h2>
+<p> {{form_data['general_desc'] | safe}} </p>
+
+<h2>Вид растения(нужного цвета):</h2>
+<p> {{form_data['spec_desc'] | safe}} </p>
+<br>
+<p> <a href={{form_data['page_ref']}}>ссылка</a> </p>
+<br>
