@@ -18,7 +18,7 @@ class PlantFinder:
 
     def collect_info(self):
         # отправимся на сайт http://www.pro-landshaft.ru/,
-        # number_pages - количество первых букв в названиях, оно
+        # number_pages - 1 = 28 - количество первых букв в названиях, оно
         # же количество страниц в каталоге всех растений
         number_pages = 29
         plant_refs = []
