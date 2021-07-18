@@ -12,20 +12,18 @@
 <p> <a href={{form_data['page_ref']}}>ссылка на страницу растения</a> </p>
 <br>
 
-<script type="text/python">
-if form_data['pest_name'] != 'nothing':
-    document.write(<h1>Этот вредитель может быть опасен: {{form_data['pest_name']}}</h1>
-    <br>
-    <img width="300" src="{{form_data['pest_photo']}}">
+{% if form_data['pest_name'] != 'nothing' %}
+        <h1>Этот вредитель может быть опасен: {{form_data['pest_name']}}</h1>
+        <br>
+        <img width="300" src="{{form_data['pest_photo']}}">
 
-    <br>
-    <h2>Информация:</h2>
-    <p>{{form_data['pest_info'] | safe}}</p>
-    <br>
-    <p> <a href={{form_data['pest_link']}}>ссылка на страницу сорняка</a> </p>
-    <br>)
-
-</script>
+        <br>
+        <h2>Информация:</h2>
+        <p>{{form_data['pest_info'] | safe}}</p>
+        <br>
+        <p> <a href={{form_data['pest_link']}}>ссылка на страницу сорняка</a> </p>
+        <br>
+{% endif %}
 
 <h1>Сорняк:  {{form_data['weed_name']}}</h1>
 <br>
