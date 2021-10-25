@@ -17,20 +17,15 @@ class PlantFinder:
         self.get_pests()
 
     def collect_info(self):
-        # отправимся на сайт http://www.pro-landshaft.ru/,
-        # number_pages - 1 = 28 - количество первых букв в названиях, оно
-        # же количество страниц в каталоге всех растений
         number_pages = 29
         plant_refs = []
 
-        # здесь находим ссылки на страницы с каждым растением
         for cur_number in range(1, number_pages):
             url = f'http://www.pro-landshaft.ru/plants/catalog/{cur_number}/'
             soup = BeautifulSoup(requests.get(url).content, 'html.parser')
             for tag in soup.find_all('li', soup.body.strong.parent.parent.parent.ul)[3:][:-14]:
                 plant_refs.append(tag.a['href'])
 
-        # ищем категории - типы растений, по которым потом будет происходить поиск
         url = f'http://www.pro-landshaft.ru/plants/catalog/1/'
         soup = BeautifulSoup(requests.get(url).content, 'html.parser')
         cat = soup.find_all('ul', soup.body.strong.parent.parent.parent)[1]
@@ -41,10 +36,6 @@ class PlantFinder:
         plant_cat = []
         pages_refs = []
 
-        # теперь пройдёмся по всем страницам с растениями
-        # о каждом будем знать его фотографию, короткое описание,
-        # затем получим описание видов - более конкретное в дополнение
-        # к первому, а также получим типы для данного растения
         for ref in plant_refs:
             url = f'http://www.pro-landshaft.ru{ref}'
             soup = BeautifulSoup(requests.get(url).content, 'html.parser')
@@ -52,10 +43,6 @@ class PlantFinder:
             info = soup.body.find_all('p')
             cur_cat = [tag.text.strip() for tag in info[1].find_all('a')]
 
-            # дальнейшнее связано со спецификой строения конкретного сайта,
-            # информация структурированна не полностью, поэтому приходится
-            # расставлять костыли в некоторых местах, преследуя цели, которые
-            # были указаны перед большим циклом
             first_type = 0
             cur_photo = ''
             while not info[first_type].text.startswith('Описание'):
@@ -75,8 +62,6 @@ class PlantFinder:
             if not common_info:
                 common_info = info[first_type].text.strip()
 
-            # поскольку на каждой странице растения содержится информация
-            # о нескольких видах, то будем пополнять списки по ним
             for cur_type in range(first_type, len(info)):
                 if info[first_type].img and not cur_photo:
                     cur_photo = 'http://www.pro-landshaft.ru{}'.format(info[first_type].img['src'].replace(' ', '%20'))
@@ -89,13 +74,8 @@ class PlantFinder:
                     pages_refs.append(url)
                     self._spec_desc.append(info[cur_type].text.strip())
 
-        # формируем список с названиями - их можно извлечь из
-        # описания вида, рассмотрев его начало
         names = [' '.join(string.split()[:2]).strip(',').strip(' –') for string in self._spec_desc]
 
-        # наконец формируем DataFrame, используя для каждого растения
-        # отдельные именные колонки(df1), а затем добавляем к ним типы,
-        # которые формируем отдельно(df2) и объединяем результаты
         df1 = pd.DataFrame(
             {
                 'Название': names,
@@ -110,15 +90,9 @@ class PlantFinder:
         self._data = pd.concat([df1, df2], axis=1)
 
     def find_colours(self):
-        # посетим в этот раз сайт https://colorscheme.ru/,
-        # здесь мы получим всевозможные цвета, которые могут
-        # встретиться в описании растений
         url = 'https://colorscheme.ru/color-names.html'
         soup = BeautifulSoup(requests.get(url).content, 'html.parser')
 
-        # последующие манипуляции нужны для того, чтобы из сложных
-        # двойных-тройных названий выделить одно слово, по типу
-        # "красный", такие мы будем использовать в дальнейшем
         colours = set()
         for tag in soup.find_all('td'):
             if tag.text.strip():
@@ -134,9 +108,6 @@ class PlantFinder:
             if colours[i].endswith('ый') or colours[i].endswith('ий'):
                 self._all_colours.add(colours[i][:-2])
 
-        # наконец формируем список с найденными цветами в описании, можно
-        # было бы непосредственно искать их каждый раз, но с целью оптимизации
-        # константы перенесём их в отдельную колонку исходного DataFrame
         colours_exist = [''] * len(self._spec_desc)
         for i in range(len(self._spec_desc)):
             string = self._spec_desc[i]
@@ -146,10 +117,6 @@ class PlantFinder:
         self._data = pd.concat([self._data, pd.DataFrame({'Цвета': colours_exist})], axis=1)
 
     def get_pests(self):
-        # теперь перейдём на сайт http://www.udec.ru/, на котором
-        # я нашёл информацию о вредителях, её мы также поместим в
-        # DataFrame, а затем будем определять тех, кто может питаться
-        # конкретным растением
         photos = []
         links = []
         names = []
@@ -159,8 +126,6 @@ class PlantFinder:
             url = f'http://www.udec.ru/vrediteli/page/{j}'
             soup = BeautifulSoup(requests.get(url).content, 'html.parser')
 
-            # здесь формируем список с информацией о каждом вредителе, некоторые будут
-            # являться статьями без конкретики(без указания вида), их будем пропускать
             result = [child for child in soup.find('h1').parent.children][3].find_all('div')
 
             for k in range(0, len(result), 2):
@@ -195,24 +160,16 @@ class PlantFinder:
         )
 
     def __call__(self, plant_types, plant_colour, plant_name):
-        # наконец формируем метод __call__(), здесь сразу проверим,
-        # указано ли название, тогда сразу осуществляем поиск(то есть
-        # при указании названия остальное писать не нужно)
-        # в противном случае ищем растения с выбранными типами - plant_types и
-        # выбранным цветом - plant_colour
         plant_name = plant_name.lower()
         if plant_name:
             indexes = self._data.apply(lambda row: plant_name in row['Название'].lower(), axis=1)
         else:
             indexes = self._data.apply(lambda row: self.match_query(row, plant_types, plant_colour), axis=1)
 
-        # обрабатываем случай, когда ничего не найдено
         if self._data[indexes].empty:
             return None
 
         result = self._data[indexes].sample(1)
-
-        # формируем информацию о растении, которую будем выводить
         form_data = {
             "res_plant_name": result["Название"].values[0],
             "general_desc": result["Общее описание"].values[0],
@@ -221,9 +178,6 @@ class PlantFinder:
             "page_ref": result["Ссылка на страницу"].values[0]
         }
 
-        # далее будем искать вредителей, если ничего не нашлось -
-        # передадим этот результат далее, иначе добавим в словарик
-        # информацию о найденном вредителе
         name = result['Название'].values[0]
         key_word = name.split()[0][:-1].lower()
         indexes = self._pests.apply(lambda row: key_word in row['Информация'].lower(), axis=1)
@@ -278,18 +232,11 @@ class RandomWeedInfo:
         return False
 
     def get_weeds(self):
-        # снова посетим http://www.udec.ru/, теперь нам нужны сорняки
-        # поскольку явного соответствия между ними и растениями нет,
-        # будем на каждый запрос присылать случайный сорняк, тем самым
-        # добавляя немного познавательной информации в ответ на запрос
         photo = []
         link = []
         info = []
         name = []
 
-        # здесь аналогично другим функциям, получаем информацию со
-        # всех страниц, а затем отправляем её в DataFrame, из которого
-        # и будем брать случайную строчку
         for k in range(1, 4):
             url = f'http://www.udec.ru/sornyaki/page/{k}'
             soup = BeautifulSoup(requests.get(url).content, 'html.parser')
@@ -311,10 +258,10 @@ class RandomWeedInfo:
 
         self._weeds = pd.DataFrame(
             {
-                'Название': name,
-                'Информация': info,
-                'Фото': photo,
-                'Ссылка на страницу': link
+                'Name': name,
+                'Info': info,
+                'Photo': photo,
+                'Link': link
             }
         )
 
