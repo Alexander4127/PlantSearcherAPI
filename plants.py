@@ -36,7 +36,7 @@ class PlantFinder:
         plant_cat = []
         pages_refs = []
 
-        for ref in plant_refs:
+        for ref in plant_refs[:10]:
             url = f'http://www.pro-landshaft.ru{ref}'
             soup = BeautifulSoup(requests.get(url).content, 'html.parser')
 
@@ -78,11 +78,11 @@ class PlantFinder:
 
         df1 = pd.DataFrame(
             {
-                'Название': names,
-                'Общее описание': common_desc,
-                'Описание вида': self._spec_desc,
-                'Фото': photos,
-                'Ссылка на страницу': pages_refs
+                'Name': names,
+                'General Description': common_desc,
+                'Special Description': self._spec_desc,
+                'Photo': photos,
+                'Link Page': pages_refs
             }
         )
         df2 = pd.DataFrame(np.array(plant_cat), columns=self._categories)
@@ -114,7 +114,7 @@ class PlantFinder:
             for colour in self._all_colours:
                 if colour in string:
                     colours_exist[i] += colour + ' '
-        self._data = pd.concat([self._data, pd.DataFrame({'Цвета': colours_exist})], axis=1)
+        self._data = pd.concat([self._data, pd.DataFrame({'Colours': colours_exist})], axis=1)
 
     def get_pests(self):
         photos = []
@@ -152,17 +152,17 @@ class PlantFinder:
                         break
         self._pests = pd.DataFrame(
             {
-                'Название': names,
-                'Информация': info,
-                'Фото': photos,
-                'Ссылка на страницу': links
+                'Name': names,
+                'Info': info,
+                'Photo': photos,
+                'Link': links
             }
         )
 
     def __call__(self, plant_types, plant_colour, plant_name):
         plant_name = plant_name.lower()
         if plant_name:
-            indexes = self._data.apply(lambda row: plant_name in row['Название'].lower(), axis=1)
+            indexes = self._data.apply(lambda row: plant_name in row['Name'].lower(), axis=1)
         else:
             indexes = self._data.apply(lambda row: self.match_query(row, plant_types, plant_colour), axis=1)
 
@@ -171,22 +171,22 @@ class PlantFinder:
 
         result = self._data[indexes].sample(1)
         form_data = {
-            "res_plant_name": result["Название"].values[0],
-            "general_desc": result["Общее описание"].values[0],
-            "spec_desc": result["Описание вида"].values[0],
-            "photo_ref": result["Фото"].values[0],
-            "page_ref": result["Ссылка на страницу"].values[0]
+            "res_plant_name": result["Name"].values[0],
+            "general_desc": result["General Description"].values[0],
+            "spec_desc": result["Special Description"].values[0],
+            "photo_ref": result["Photo"].values[0],
+            "page_ref": result["Link Page"].values[0]
         }
 
-        name = result['Название'].values[0]
+        name = result['Name'].values[0]
         key_word = name.split()[0][:-1].lower()
-        indexes = self._pests.apply(lambda row: key_word in row['Информация'].lower(), axis=1)
+        indexes = self._pests.apply(lambda row: key_word in row['Info'].lower(), axis=1)
         if not self._pests[indexes].empty:
             pest = self._pests[indexes].sample(1)
-            form_data['pest_name'] = pest['Название'].values[0]
-            form_data['pest_info'] = pest['Информация'].values[0]
-            form_data['pest_photo'] = pest['Фото'].values[0]
-            form_data['pest_link'] = pest['Ссылка на страницу'].values[0]
+            form_data['pest_name'] = pest['Name'].values[0]
+            form_data['pest_info'] = pest['Info'].values[0]
+            form_data['pest_photo'] = pest['Photo'].values[0]
+            form_data['pest_link'] = pest['Link Page'].values[0]
         else:
             form_data['pest_name'] = 'nothing'
 
@@ -215,7 +215,7 @@ class PlantFinder:
         for cur_type in cur_types:
             if not row[cur_type]:
                 return False
-        return cur_colour[:-2] in row['Цвета']
+        return cur_colour[:-2] in row['Colours']
 
 
 class RandomWeedInfo:
